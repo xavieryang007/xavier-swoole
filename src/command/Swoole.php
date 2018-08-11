@@ -19,7 +19,7 @@ class Swoole extends Command
             ->setDescription('Swoole HTTP Server for ThinkPHP');
     }
 
-    public function execute(Input $input, Output $output)
+    protected function execute(Input $input, Output $output)
     {
         $action = $input->getArgument('action');
 
