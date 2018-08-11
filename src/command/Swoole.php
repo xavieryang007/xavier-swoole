@@ -5,6 +5,8 @@ use think\console\Command;
 use think\Config;
 use Swoole\Table;
 use think\Loader;
+use think\console\Input;
+use think\console\Output;
 class Swoole extends Command
 {
     protected $config = [];
