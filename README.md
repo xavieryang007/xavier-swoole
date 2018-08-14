@@ -71,5 +71,6 @@ return [
     'task_worker_num'       => 20,
     //'document_root'         => getcwd() . 'public', //是否开启静态文件支持需要同时开启enable_static_handler
     //'enable_static_handler' => true,
+    'daemon'=>true
 ];
 ```
