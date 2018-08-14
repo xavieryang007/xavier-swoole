@@ -1,41 +1,54 @@
-ThinkPHP 5.0 Swoole 扩展
-===============
+# ThinkPHP 5.0 Swoole 扩展
 
-## 安装
-首先按照Swoole官网说明安装swoole扩展
-然后使用
-composer require topthink/think-swoole
+参考官方think-swoole2.0开发基于TP5.0的swoole扩展包
 
-## 使用方法
-首先创建控制器类并继承 think\Swoole\Server，然后设置属性和添加回调方法
+增加异步任务投递
 
-~~~
+
+
+```php
+<?php
+
 namespace app\index\controller;
 
-use think\Swoole\Server;
+use xavier\swoole\Task;
 
-class Swoole extends Server
+
+class Index
 {
-	protected $host = '127.0.0.1';
-	protected $port = 9502;
-	protected $option = [ 
-		'worker_num'	=> 4,
-		'daemonize'	=> true,
-		'backlog'	=> 128
-	];
+    public function index()
+    {
+        return "index";
+    }
 
-	public function onReceive($server, $fd, $from_id, $data)
-	{
-		$server->send($fd, 'Swoole: '.$data);
-	}
+    public function test()
+    {
+        echo 1;
+        $param = request()->param();
+        $post  = request()->post();
+
+        //异步任务投递
+        Task::async(function ($serv, $task_id, $data) {
+            $i = 0;
+            while ($i < 10) {
+                $i++;
+                echo $i;
+                sleep(1);
+            }
+        });
+        //使用swoole4.0协程
+        \go(function () {
+            $i = 0;
+            while ($i < 10) {
+                echo 2;
+                $i++;
+                \co::sleep(1);
+            };
+        });
+        return json($post);
+    }
 }
-~~~
 
-支持swoole所有的回调方法定义（回调方法必须是public类型）
-serverType 属性定义为 socket/http 则支持swoole的swoole_websocket_server和swoole_http_server
+```
 
-在命令行启动服务端
-~~~
-php index.php index/Swoole/start
-~~~
 
