@@ -66,8 +66,8 @@ return [
     'file_monitor_interval' => 2, // 文件变化监控检测时间间隔（秒）
     'file_monitor_path'     => [], // 文件监控目录 默认监控application和config目录
     // 可以支持swoole的所有配置参数
-    'pid_file'              => APP_PATH . 'swoole.pid',
-    'log_file'              => APP_PATH . 'swoole.log',
+    'pid_file'              => getcwd()  . '/runtime/swoole.pid',
+    'log_file'              => getcwd()  . '/runtime/swoole.log',
     'task_worker_num'       => 20,
     //'document_root'         => getcwd() . 'public',
     //'enable_static_handler' => true,
