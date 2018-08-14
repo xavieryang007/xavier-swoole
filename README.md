@@ -71,7 +71,7 @@ return [
     'task_worker_num'       => 20,
     //'document_root'         => getcwd() . 'public',
     //'enable_static_handler' => true,
-    'daemon'                => true,
+    'daemonize'                => 1,//守护
     'worker_num' => 8,    //worker process num
     'max_request' => 10000,
 ];
@@ -88,4 +88,20 @@ public static function deletethis()
             self::$instance=null;
         }
     }
+```
+
+启动命令
+```sh
+php think swoole start
+```
+
+守护启动
+```sh
+php think swoole start -d
+```
+
+停止服务
+
+```sh
+php think swoole stop
 ```
