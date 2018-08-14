@@ -108,7 +108,7 @@ class Swoole extends Command
 
         // 开启守护进程模式
         if ($this->input->hasOption('daemon')) {
-            $this->config['daemonize'] = true;
+            $this->config['daemonize'] = 1;
         }
 
         // 设置应用目录
