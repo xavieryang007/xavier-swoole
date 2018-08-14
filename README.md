@@ -69,9 +69,11 @@ return [
     'pid_file'              => APP_PATH . 'swoole.pid',
     'log_file'              => APP_PATH . 'swoole.log',
     'task_worker_num'       => 20,
-    //'document_root'         => getcwd() . 'public', //是否开启静态文件支持需要同时开启enable_static_handler
+    //'document_root'         => getcwd() . 'public',
     //'enable_static_handler' => true,
-    'daemon'=>false//是否为守护进程
+    'daemon'                => true,
+    'worker_num' => 8,    //worker process num
+    'max_request' => 10000,
 ];
 ```
 
