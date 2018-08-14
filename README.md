@@ -76,7 +76,8 @@ return [
 ```
 
 
-注意：\think\Request 增加如下静态方法
+注意：\think\Request 增加如下静态方法。
+由于TP运行在Apache或者NGINX下，是每次请求后都会销毁，所以这里的单例并不会造成什么问题，但是在Swoole下，由于常驻内存，所以请求单例一旦实例化则不会改变，所以这里就将其删除，每次请求后重新实例化
 
 ```php
 public static function deletethis()
