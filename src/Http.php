@@ -8,13 +8,19 @@
 // +----------------------------------------------------------------------
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
-namespace think\swoole;
+namespace xavier\swoole;
 
 use Swoole\Http\Server as HttpServer;
 use Swoole\Table;
 use think\Facade;
 use think\Loader;
-
+use think\App;
+use think\Error;
+use think\exception\HttpException;
+use think\Response;
+use think\Request;
+use Swoole\Http\Request as SwooleRequest;
+use Swoole\Http\Response as SwooleResponse;
 /**
  * Swoole Http Server 命令行服务类
  */
@@ -46,6 +52,11 @@ class Http extends Server
         $this->swoole = new HttpServer($host, $port, $mode, $sockType);
     }
 
+    public function getSwoole()
+    {
+        return $this->swoole;
+    }
+
     public function setAppPath($path)
     {
         $this->appPath = $path;
@@ -54,7 +65,7 @@ class Http extends Server
     public function setMonitor($interval = 2, $path = [])
     {
         $this->monitor['interval'] = $interval;
-        $this->monitor['path']     = (array) $path;
+        $this->monitor['path']     = (array)$path;
     }
 
     public function table(array $option)
@@ -106,31 +117,18 @@ class Http extends Server
     {
         // 应用实例化
         $this->app       = new Application($this->appPath);
+        $this->app->setSwoole($this->swoole);
         $this->lastMtime = time();
 
         if ($this->table) {
             $this->app['swoole_table'] = $this->table;
         }
 
-        // 指定日志类驱动
-        Loader::addClassMap([
-            'think\\log\\driver\\File' => __DIR__ . '/log/File.php',
-        ]);
+//        // 指定日志类驱动
+//        Loader::addClassMap([
+//            'think\\log\\driver\\File' => __DIR__ . '/log/File.php',
+//        ]);
 
-        Facade::bind([
-            'think\facade\Cookie'     => Cookie::class,
-            'think\facade\Session'    => Session::class,
-            facade\Application::class => Application::class,
-            facade\Http::class        => Http::class,
-        ]);
-
-        // 应用初始化
-        $this->app->initialize();
-
-        $this->app->bindTo([
-            'cookie'  => Cookie::class,
-            'session' => Session::class,
-        ]);
 
         if (0 == $worker_id && $this->monitor) {
             $this->monitor($server);
@@ -144,7 +142,7 @@ class Http extends Server
      */
     protected function monitor($server)
     {
-        $paths = $this->monitor['path'] ?: [$this->app->getAppPath(), $this->app->getConfigPath()];
+        $paths = $this->monitor['path'] ?: [APP_PATH];
         $timer = $this->monitor['interval'] ?: 2;
 
         $server->tick($timer, function () use ($paths, $server) {
@@ -173,9 +171,46 @@ class Http extends Server
      * @param $request
      * @param $response
      */
-    public function onRequest($request, $response)
+    public function onRequest(SwooleRequest $request, SwooleResponse $response)
     {
-        // 执行应用并响应
-        $this->app->swoole($request, $response);
+        $this->app->swoole($request,$response);
+
+    }
+
+    public function onTask(HttpServer $serv, $task_id, $fromWorkerId,$data)
+    {
+        if($data instanceof SuperClosure){
+            return $data($serv,  $task_id,  $data);
+        }else{
+            $serv->finish($data);
+        }
+
+    }
+
+    public function onFinish(HttpServer $serv,  $task_id,  $data)
+    {
+        if($data instanceof SuperClosure){
+             $data($serv,  $task_id,  $data);
+        }
+    }
+
+    protected function exception($response, $e)
+    {
+        if ($e instanceof \Exception) {
+            $handler = Error::getExceptionHandler();
+            $handler->report($e);
+
+            $resp    = $handler->render($e);
+            $content = $resp->getContent();
+            $code    = $resp->getCode();
+
+            $response->status($code);
+            $response->end($content);
+        } else {
+            $response->status(500);
+            $response->end($e->getMessage());
+        }
+
+        throw $e;
     }
 }

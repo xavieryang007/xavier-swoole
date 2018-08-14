@@ -8,6 +8,9 @@
 // +----------------------------------------------------------------------
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
+if (!defined("APP_PATH")){
+    define('APP_PATH', __DIR__ . '/../application/');
+}
 
 // 注册命令行指令
 \think\Console::addDefaultCommands([

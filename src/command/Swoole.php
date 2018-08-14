@@ -1,17 +1,21 @@
 <?php
-namespace think\command;
+namespace xavier\swoole\command;
 
 use think\console\Command;
 use think\Config;
 use Swoole\Table;
 use think\Loader;
 use think\console\Input;
+use think\console\input\Option;
 use think\console\Output;
+use think\console\input\Argument;
+use xavier\swoole\Http as HttpServer;
+use Swoole\Process;
 class Swoole extends Command
 {
     protected $config = [];
 
-    public function configure()
+    protected function configure()
     {
         $this->setName('swoole')
             ->addArgument('action', Argument::OPTIONAL, "start|stop|restart|reload", 'start')
@@ -40,7 +44,7 @@ class Swoole extends Command
         $this->config = Config::get('swoole');
 
         if (empty($this->config['pid_file'])) {
-            $this->config['pid_file'] = Env::get('runtime_path') . 'swoole.pid';
+            $this->config['pid_file'] = APP_PATH . 'swoole.pid';
         }
 
         // 避免pid混乱
@@ -112,7 +116,7 @@ class Swoole extends Command
         }
 
         // 设置文件监控 调试模式自动开启
-        if (Env::get('app_debug') || !empty($this->config['file_monitor'])) {
+        if (Config::get('app_debug') || !empty($this->config['file_monitor'])) {
             $interval = isset($this->config['file_monitor_interval']) ? $this->config['file_monitor_interval'] : 2;
             $paths    = isset($this->config['file_monitor_path']) ? $this->config['file_monitor_path'] : [];
             $swoole->setMonitor($interval, $paths);
