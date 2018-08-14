@@ -53,6 +53,7 @@ class Index
 
 
 ### 配置文件
+第三方包的配置文件必须在application/extra下，文件名为swoole.php
 
 ```php
 <?php
