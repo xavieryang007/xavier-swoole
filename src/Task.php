@@ -2,7 +2,7 @@
 /**
  * 参考think-swoole2.0开发
  * author:xavier
- * email:49987958@qq.com
+ *  email:499873958@qq.com
  */
 
 namespace xavier\swoole;
