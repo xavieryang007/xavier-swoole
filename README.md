@@ -74,3 +74,15 @@ return [
     'daemon'=>false//是否为守护进程
 ];
 ```
+
+
+注意：\think\Request 增加如下静态方法
+
+```php
+public static function deletethis()
+    {
+        if (!is_null(self::$instance)) {
+            self::$instance=null;
+        }
+    }
+```
