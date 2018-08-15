@@ -1,22 +1,24 @@
 {
-    "name": "xaviertony/xavier-swoole",
-    "description": "Swoole extend for thinkphp5",
-    "license": "Apache-2.0",
-    "authors": [
-        {
-            "name": "Xavier",
-            "email": "499873958@qq.com"
-        }
-    ],
-    "require": {
-	"ext-swoole": ">=1.8"
-    },
-    "autoload": {
-        "psr-4": {
-            "xavier\\swoole\\": "src"
-        },
-        "files": [
-            "src/command.php"
-        ]
+  "name": "xaviertony/xavier-swoole",
+  "description": "Swoole extend for thinkphp5",
+  "license": "Apache-2.0",
+  "authors": [
+    {
+      "name": "Xavier",
+      "email": "499873958@qq.com"
     }
+  ],
+  "require": {
+    "ext-swoole": ">=1.8",
+    "guzzlehttp/guzzle": "^6.3",
+    "jeremeamia/superclosure": "^2.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "xavier\\swoole\\": "src"
+    },
+    "files": [
+      "src/command.php"
+    ]
+  }
 }

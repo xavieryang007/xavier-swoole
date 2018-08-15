@@ -2,21 +2,16 @@
 /**
  * 参考think-swoole2.0开发
  * author:xavier
- *  email:499873958@qq.com
+ * email:49987958@qq.com
  */
 namespace xavier\swoole;
 
 use Swoole\Http\Server as HttpServer;
 use Swoole\Table;
-use think\Facade;
-use think\Loader;
-use think\App;
 use think\Error;
-use think\exception\HttpException;
-use think\Response;
-use think\Request;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
+use think\Config;
 /**
  * Swoole Http Server 命令行服务类
  */
@@ -115,7 +110,7 @@ class Http extends Server
         $this->app       = new Application($this->appPath);
         $this->app->setSwoole($this->swoole);
         $this->lastMtime = time();
-
+        \think\Hook::listen('swoole_on_woker_start',$worker_id);
         if ($this->table) {
             $this->app['swoole_table'] = $this->table;
         }
@@ -129,6 +124,15 @@ class Http extends Server
         if (0 == $worker_id && $this->monitor) {
             $this->monitor($server);
         }
+        //只在一个进程内执行定时任务
+        if (0 == $worker_id){
+            $this->timer($server);
+        }
+    }
+
+    public function getTable()
+    {
+        return $this->table;
     }
 
     /**
@@ -154,12 +158,26 @@ class Http extends Server
                     if ($this->lastMtime < $file->getMTime()) {
                         $this->lastMtime = $file->getMTime();
                         echo '[update]' . $file . " reload...\n";
+                        \think\Hook::listen('swoole_reload_file',$file);
                         $server->reload();
                         return;
                     }
                 }
             }
         });
+    }
+
+    public function timer($server)
+    {
+        $timer=Config::get('swoole.timer');
+        $interval=intval(Config::get('swoole.interval'));
+        if ($timer){
+            $interval=$interval>0?$interval:1000;
+            $systimer=Timer::instance();
+            $server->tick($interval, function () use ($systimer) {
+                $systimer->run();
+            });
+        }
     }
 
     /**
@@ -169,12 +187,26 @@ class Http extends Server
      */
     public function onRequest(SwooleRequest $request, SwooleResponse $response)
     {
+        \think\Hook::listen('swoole_on_request',$request);
         $this->app->swoole($request,$response);
 
     }
 
     public function onTask(HttpServer $serv, $task_id, $fromWorkerId,$data)
     {
+        if(is_string($data) && class_exists($data)){
+            $taskObj = new $data;
+            if (method_exists($taskObj,'run')){
+                $taskObj->run($serv, $task_id, $fromWorkerId);
+                unset($taskObj);
+            }
+        }
+
+        if (is_object($data)&&method_exists($data,'run')){
+            $data->run($serv, $task_id, $fromWorkerId);
+            unset($data);
+        }
+        \think\Hook::listen('swoole_on_task',$data);
         if($data instanceof SuperClosure){
             return $data($serv,  $task_id,  $data);
         }else{
@@ -185,6 +217,7 @@ class Http extends Server
 
     public function onFinish(HttpServer $serv,  $task_id,  $data)
     {
+        \think\Hook::listen('swoole_on_finish',$data);
         if($data instanceof SuperClosure){
              $data($serv,  $task_id,  $data);
         }

@@ -2,7 +2,7 @@
 /**
  * 参考think-swoole2.0开发
  * author:xavier
- *  email:499873958@qq.com
+ * email:49987958@qq.com
  */
 namespace xavier\swoole;
 
@@ -37,13 +37,12 @@ class Application extends App
             $this->beginMem  = memory_get_usage();
 
 
-            $_COOKIE = $request->cookie ?: [];//array_change_key_case($request->cookie?:[], CASE_UPPER);
-            $_GET    = $request->get ?: [];//array_change_key_case($request->get?:[], CASE_UPPER) ;
-            $_POST   = $request->post ?: [];//array_change_key_case($request->post?:[], CASE_UPPER);
-            $_COOKIE = $request->cookie ?: [];//array_change_key_case($request->cookie?:[], CASE_UPPER);
-            $_FILES  = $request->files ?: [];//array_change_key_case($request->files?:[], CASE_UPPER);
+            $_COOKIE = $request->cookie ?: [];
+            $_GET    = $request->get ?: [];
+            $_POST   = $request->post ?: [];
+            $_COOKIE = $request->cookie ?: [];
+            $_FILES  = $request->files ?: [];
             $_SERVER = array_change_key_case($request->server ?: [], CASE_UPPER);
-
 
             $_SERVER['HTTP_HOST'] = '127.0.0.1';
             $_SERVER["PATH_INFO"] = $_SERVER["PATH_INFO"] ?: '/';

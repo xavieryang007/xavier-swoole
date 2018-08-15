@@ -91,6 +91,36 @@ public static function deletethis()
     }
 ```
 
+修改如下代码,由于采用命令行模式运行无论什么请求都会被认为是get
+
+```php
+/**
+     * 当前的请求类型
+     * @access public
+     * @param bool $method true 获取原始请求类型
+     * @return string
+     */
+    public function method($method = false)
+    {
+        if (true === $method) {
+            // 获取原始请求类型
+            return IS_CLI ? 'GET' : (isset($this->server['REQUEST_METHOD']) ? $this->server['REQUEST_METHOD'] : $_SERVER['REQUEST_METHOD']);
+        } elseif (!$this->method) {
+            if (isset($_POST[Config::get('var_method')])) {
+                $this->method = strtoupper($_POST[Config::get('var_method')]);
+                $this->{$this->method}($_POST);
+            } elseif (isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'])) {
+                $this->method = strtoupper($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']);
+            } else {
+                $this->method = IS_CLI ?(defined('IS_SWOOLE')?((isset($this->server['REQUEST_METHOD'])? $this->server['REQUEST_METHOD'] : isset($_SERVER['REQUEST_METHOD'])?$_SERVER['REQUEST_METHOD']:'GET')):'GET') : (isset($this->server['REQUEST_METHOD']) ? $this->server['REQUEST_METHOD'] : $_SERVER['REQUEST_METHOD']);
+
+
+            }
+        }
+        return $this->method;
+    }
+```
+
 启动命令
 ```sh
 php think swoole start

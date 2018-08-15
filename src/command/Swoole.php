@@ -2,7 +2,7 @@
 /**
  * 参考think-swoole2.0开发
  * author:xavier
- * email:499873958@qq.com
+ * email:49987958@qq.com
  */
 namespace xavier\swoole\command;
 
@@ -86,7 +86,7 @@ class Swoole extends Command
     protected function start()
     {
         $pid = $this->getMasterPid();
-
+        \think\Hook::listen('swoole_before_start',$pid);
         if ($this->isRunning($pid)) {
             $this->output->writeln('<error>swoole http server process is already running.</error>');
             return false;
@@ -110,6 +110,7 @@ class Swoole extends Command
         if ($this->input->hasOption('daemon')) {
             $this->config['daemonize'] = 1;
         }
+
 
         // 设置应用目录
         $swoole->setAppPath($this->config['app_path']);
@@ -157,6 +158,7 @@ class Swoole extends Command
         $this->output->writeln('Reloading swoole http server...');
         Process::kill($pid, SIGUSR1);
         $this->output->writeln('> success');
+        \think\Hook::listen('swoole_reload',$pid);
     }
 
     /**
@@ -167,7 +169,7 @@ class Swoole extends Command
     protected function stop()
     {
         $pid = $this->getMasterPid();
-
+        \think\Hook::listen('swoole_before_stop',$pid);
         if (!$this->isRunning($pid)) {
             $this->output->writeln('<error>no swoole http server process running.</error>');
             return false;
@@ -189,7 +191,7 @@ class Swoole extends Command
     protected function restart()
     {
         $pid = $this->getMasterPid();
-
+        \think\Hook::listen('swoole_before_restart',$pid);
         if ($this->isRunning($pid)) {
             $this->stop();
         }
