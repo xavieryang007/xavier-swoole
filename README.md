@@ -300,3 +300,6 @@ Timer::tick(1000,'\\app\\lib\\Timer');
 
 系统配置的定时器，在第一个worker创建一个定时器，根据任务是否到期需要执行来进行异步任务投递，并不是对当前进程造成阻塞
 但是需要配置task_work_num
+
+
+手册 https://www.kancloud.cn/xavier007/xavier_swoole
