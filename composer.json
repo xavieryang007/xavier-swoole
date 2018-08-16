@@ -21,5 +21,11 @@
     "files": [
       "src/command.php"
     ]
+  },
+  "extra": {
+    "think-config": {
+      "swoole": "src/config/swoole.php",
+      "swoole_timer":"src/config/timer.php"
+    }
   }
 }
