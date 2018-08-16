@@ -81,9 +81,10 @@ class HttpClient
         return ((string)$body);
     }
 
-    public function setcontenttype($htmltype='json')
+    public function setContentType($htmltype='json')
     {
         $this->html=$htmltype;
+        return $this;
     }
 
 

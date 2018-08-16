@@ -135,3 +135,168 @@ php think swoole start -d
 ```sh
 php think swoole stop
 ```
+
+
+## Demo
+
+
+```php
+<?php
+
+namespace app\index\controller;
+
+use xavier\swoole\Task;
+use xavier\swoole\Timer;
+
+use xavier\swoole\Component\HttpClient;
+
+class Index
+{
+    public function __construct()
+    {
+
+    }
+
+    public function index()
+    {
+        return "indexss";
+    }
+
+    public function test()
+    {
+        $param = request()->param();
+        $post  = request()->post();
+
+
+        Task::async(function ($serv, $task_id, $data)use($post) {
+            $i = 0;
+            while ($i < 10) {
+                $i++;
+                echo $i;
+                //var_dump($post);
+                sleep(1);
+            }
+        });
+
+        //Task::async("\\app\\lib\\Task");
+        $task=new \app\lib\Task($post,1);
+        Task::async($task);
+        \go(function ()use($post) {
+            $i = 0;
+            while ($i < 10) {
+                $i++;
+                //var_dump($post);
+                \co::sleep(1);
+            };
+        });
+        return json($post);
+    }
+
+    public function send()
+    {
+        $data  = [1, 2, 3,];
+        $datas = ['a', 'b1232'];
+        $redt  = HttpClient::instance("http://127.0.0.1:9501")->url('index/index')->gets([
+            'data'  => $data,
+            'datas' => $datas,
+        ]);
+        var_dump($redt);
+    }
+
+    public function sendhtml()
+    {
+        $data  = [1, 2, 3,];
+        $datas = ['a', 'b1232'];
+        $redt  = HttpClient::instance("http://127.0.0.1:9501")->url('index/index')->setContentType('html')->test([
+            'data'  => $data,
+            'datas' => $datas,
+        ]);
+        var_dump($redt);
+    }
+
+    public function gets($data=null,$datas=null)
+    {
+        return json(array_merge($data,$datas));
+
+    }
+
+
+}
+
+
+```
+
+### 定时器
+
+如下是定时器接口的实现
+
+```php
+<?php
+/**
+ * Created by PhpStorm.
+ * User: xavier
+ * Date: 2018/8/15
+ * Time: 下午5:45
+ */
+
+namespace app\lib;
+
+use xavier\swoole\Component\Timer as TimerC;
+class Timer extends TimerC
+{
+    public function _initialize(...$arg)
+    {
+        // TODO: Implement _initialize() method.
+    }
+
+    public function run()
+    {
+        // TODO: Implement run() method.
+        var_dump('timer');
+    }
+}
+```
+
+
+只需要在定时器配置中配置定时任务的时间
+
+```php
+<?php
+/**
+ * Created by PhpStorm.
+ * User: xavier
+ * Date: 2018/8/15
+ * Time: 下午2:14
+ * 秒 分 时 日 月 星期几
+ * crontab 格式 * *  *  *  * *    => "类"
+ * *中间一个空格
+ * 系统定时任务需要在swoole.php中开启
+ * 自定义定时器不受其影响
+ */
+
+return [
+    '*/5 * * * * *'=>'\\app\\lib\\Timer',//每5秒执行一次，从第一位一次表示 秒，分，时，日，月
+];
+```
+
+同时定时任务支持在任务进程执行
+
+```php
+<?php
+use xavier\swoole\Timer;
+
+//支持回调
+Timer::tick(1000,function(){
+    
+});
+
+//支持执行定时器接口实现的类
+Timer::tick(1000,'\\app\\lib\\Timer');
+
+```
+
+
+不建议在任意进程随意使用定时器，建议使用系统配置的定时器，请注意自定义定时器使用和销毁
+
+系统配置的定时器，在第一个worker创建一个定时器，根据任务是否到期需要执行来进行异步任务投递，并不是对当前进程造成阻塞
+但是需要配置task_work_num
