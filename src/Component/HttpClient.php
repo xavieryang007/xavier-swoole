@@ -17,6 +17,7 @@ class HttpClient
     private static $instance = [];
     private $type = 'post';
     private $many = 'single';
+    private $html='json';
 
     public function __construct($url, $timeout = 2)
     {
@@ -80,6 +81,11 @@ class HttpClient
         return ((string)$body);
     }
 
+    public function setcontenttype($htmltype='json')
+    {
+        $this->html=$htmltype;
+    }
+
 
 
     public function __call($name, $arguments)
@@ -90,11 +96,16 @@ class HttpClient
         }else{
             $arg=isset($arguments[0])?$arguments[0]:[];
         }
+        $data='';
         switch ($this->type) {
             case 'post':
-                return $this->post($name, $arg);
+                $data= $this->post($name, $arg);
             default:
-                return $this->get($name, $arg);
+                $data= $this->get($name, $arg);
         }
+        if (!empty($data)&&$this->html=="json"){
+            return \GuzzleHttp\json_decode($data,true);
+        }
+        return $data;
     }
 }

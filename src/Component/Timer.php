@@ -21,12 +21,12 @@ abstract class Timer
 
     public function __construct(...$arg)
     {
-        $key='timer'.static::class;
-        if (Application::getSwoole()->getTable()->exist($key)){
-            $this->lock=true;
-        }else{
-            Application::getSwoole()->getTable()->set($key,true);
-        }
+//        $key='timer'.static::class;
+//        if (Application::getSwoole()->getTable()->exist($key)){
+//            $this->lock=true;
+//        }else{
+//            Application::getSwoole()->getTable()->set($key,true);
+//        }
         $this->arg = $arg;
         $this->_initialize(...$arg);
 
@@ -39,9 +39,9 @@ abstract class Timer
     public function __destruct()
     {
         // TODO: Implement __destruct() method.
-        $key='timer'.static::class;
-        if (Application::getSwoole()->getTable()->exist($key)){
-            Application::getSwoole()->getTable()->del($key);
-        }
+//        $key='timer'.static::class;
+//        if (Application::getSwoole()->getTable()->exist($key)){
+//            Application::getSwoole()->getTable()->del($key);
+//        }
     }
 }

@@ -9,7 +9,8 @@
 namespace xavier\swoole;
 
 use Swoole\Timer as SwooleTimer;
-
+use xavier\swoole\Lib\Crontab;
+use Cron\CronExpression;
 /**
  * Class Timer
  * 可以执行回调函数，同时可以执行定时器模板
@@ -20,6 +21,7 @@ use think\Cache;
 class Timer
 {
     private static $instance = null;
+    private static $timerlists = [];
     private $config=[];
     public function __construct()
     {
@@ -40,25 +42,53 @@ class Timer
 
     public function run($serv)
     {
-        foreach ($this->config as $key=>$val){
-            foreach ($val as $k=>$v){
+        if (count(self::$timerlists)>0){
+            $this->startTask();
+        }else{
+            $this->initimerlists();
+        }
 
+    }
+    public function startTask()
+    {
+        foreach (self::$timerlists as &$one){
+            if ($one['nexttime']<=time()){
+                $cron=CronExpression::factory($one['key']);
+                $one['nexttime']=$cron->getNextRunDate()->getTimestamp();
+                $this->syncTask($one['val']);
             }
+        }
+        unset($one);
+    }
+
+    public function initimerlists()
+    {
+        $i=0;
+        foreach ($this->config as $key=>$val){
+            try{
+                $cron=CronExpression::factory($key);
+                $time=$cron->getNextRunDate()->getTimestamp();
+                self::$timerlists[$i]['key']=$key;
+                self::$timerlists[$i]['val']=$val;
+                self::$timerlists[$i]['nexttime']=$time;
+            }catch (\Exception $e){
+                var_dump($e);
+                throw new \Exception("定时器异常");
+            }
+            $i++;
         }
     }
 
-    public function checkrun()
-    {
-
-    }
 
     public function syncTask($class)
     {
         if (is_string($class)&&class_exists($class)){
-            Task::async(function()use($class){
-                $obj=new $class();
-                $obj->run();
-                unset($obj);
+            \go(function()use($class){
+                Task::async(function()use($class){
+                    $obj=new $class();
+                    $obj->run();
+                    unset($obj);
+                });
             });
         }
     }

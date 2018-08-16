@@ -11,7 +11,8 @@
   "require": {
     "ext-swoole": ">=1.8",
     "guzzlehttp/guzzle": "^6.3",
-    "jeremeamia/superclosure": "^2.4"
+    "jeremeamia/superclosure": "^2.4",
+    "xavier/xcron-expression": "^0.1.0"
   },
   "autoload": {
     "psr-4": {

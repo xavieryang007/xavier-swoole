@@ -174,8 +174,8 @@ class Http extends Server
         if ($timer){
             $interval=$interval>0?$interval:1000;
             $systimer=Timer::instance();
-            $server->tick($interval, function () use ($systimer) {
-                $systimer->run();
+            $server->tick($interval, function () use ($systimer,$server) {
+                $systimer->run($server);
             });
         }
     }
