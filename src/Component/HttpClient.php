@@ -9,7 +9,7 @@ namespace xavier\swoole\Component;
  * Time: 上午9:09
  */
 use GuzzleHttp\Client;
-
+use think\Config;
 class HttpClient
 {
     private $client;
@@ -19,8 +19,9 @@ class HttpClient
     private $many = 'single';
     private $html='json';
 
-    public function __construct($url, $timeout = 2)
+    public function __construct($url=null, $timeout = 2)
     {
+        $url=is_null($url)?'http://127.0.0.1:'.Config::get('swoole.port'):$url;
         $this->client = new Client([
             // Base URI is used with relative requests
             'base_uri' => $url,
