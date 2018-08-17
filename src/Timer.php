@@ -27,7 +27,8 @@ class Timer
     {
         $this->config=Config::get('timer');
         if (empty($this->config)){
-            throw new \think\Exception("timer setting file is not exits");
+            $this->config=[];
+            //throw new \think\Exception("timer setting file is not exits");
         }
     }
 
