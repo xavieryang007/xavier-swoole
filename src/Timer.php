@@ -10,7 +10,7 @@ namespace xavier\swoole;
 
 use Swoole\Timer as SwooleTimer;
 use xavier\swoole\Lib\Crontab;
-use Cron\CronExpression;
+use XCron\CronExpression;
 /**
  * Class Timer
  * 可以执行回调函数，同时可以执行定时器模板
