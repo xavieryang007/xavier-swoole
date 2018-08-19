@@ -12,7 +12,7 @@
     "ext-swoole": ">=1.8",
     "guzzlehttp/guzzle": "^6.3",
     "jeremeamia/superclosure": "^2.4",
-    "xavier/xcron-expression": "^0.1.0"
+    "xavier/xcron-expression": "^0.11"
   },
   "autoload": {
     "psr-4": {
