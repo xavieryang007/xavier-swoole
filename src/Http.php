@@ -4,6 +4,7 @@
  * author:xavier
  * email:49987958@qq.com
  */
+
 namespace xavier\swoole;
 
 use Swoole\Http\Server as HttpServer;
@@ -12,6 +13,7 @@ use think\Error;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
 use think\Config;
+
 /**
  * Swoole Http Server 命令行服务类
  */
@@ -107,26 +109,41 @@ class Http extends Server
     public function onWorkerStart($server, $worker_id)
     {
         // 应用实例化
-        $this->app       = new Application($this->appPath);
+        $this->app = new Application($this->appPath);
         $this->app->setSwoole($this->swoole);
         $this->lastMtime = time();
-        \think\Hook::listen('swoole_on_woker_start',$worker_id);
+        \think\Hook::listen('swoole_on_woker_start', $worker_id);
         if ($this->table) {
             $this->app['swoole_table'] = $this->table;
         }
 
-//        // 指定日志类驱动
-//        Loader::addClassMap([
-//            'think\\log\\driver\\File' => __DIR__ . '/log/File.php',
-//        ]);
-
+        $this->initServer($server, $worker_id);
 
         if (0 == $worker_id && $this->monitor) {
             $this->monitor($server);
         }
         //只在一个进程内执行定时任务
-        if (0 == $worker_id){
+        if (0 == $worker_id) {
             $this->timer($server);
+        }
+    }
+
+    /**
+     * 自定义初始化Swoole
+     * @param $server
+     * @param $worker_id
+     */
+    public function initServer($server, $worker_id)
+    {
+        $wokerStart = Config::get('swoole.wokerstart');
+        if ($wokerStart) {
+            if (is_string($wokerStart) && class_exists($wokerStart)) {
+                $obj = new $wokerStart($server, $worker_id);
+                $obj->run();
+                unset($obj);
+            } elseif ($wokerStart instanceof \Closure) {
+                $wokerStart($server, $worker_id);
+            }
         }
     }
 
@@ -158,7 +175,7 @@ class Http extends Server
                     if ($this->lastMtime < $file->getMTime()) {
                         $this->lastMtime = $file->getMTime();
                         echo '[update]' . $file . " reload...\n";
-                        \think\Hook::listen('swoole_reload_file',$file);
+                        \think\Hook::listen('swoole_reload_file', $file);
                         $server->reload();
                         return;
                     }
@@ -169,12 +186,12 @@ class Http extends Server
 
     public function timer($server)
     {
-        $timer=Config::get('swoole.timer');
-        $interval=intval(Config::get('swoole.interval'));
-        if ($timer){
-            $interval=$interval>0?$interval:1000;
-            $systimer=Timer::instance();
-            $server->tick($interval, function () use ($systimer,$server) {
+        $timer    = Config::get('swoole.timer');
+        $interval = intval(Config::get('swoole.interval'));
+        if ($timer) {
+            $interval = $interval > 0 ? $interval : 1000;
+            $systimer = Timer::instance();
+            $server->tick($interval, function () use ($systimer, $server) {
                 $systimer->run($server);
             });
         }
@@ -187,39 +204,39 @@ class Http extends Server
      */
     public function onRequest(SwooleRequest $request, SwooleResponse $response)
     {
-        \think\Hook::listen('swoole_on_request',$request);
-        $this->app->swoole($request,$response);
+        \think\Hook::listen('swoole_on_request', $request);
+        $this->app->swoole($request, $response);
 
     }
 
-    public function onTask(HttpServer $serv, $task_id, $fromWorkerId,$data)
+    public function onTask(HttpServer $serv, $task_id, $fromWorkerId, $data)
     {
-        if(is_string($data) && class_exists($data)){
+        if (is_string($data) && class_exists($data)) {
             $taskObj = new $data;
-            if (method_exists($taskObj,'run')){
+            if (method_exists($taskObj, 'run')) {
                 $taskObj->run($serv, $task_id, $fromWorkerId);
                 unset($taskObj);
             }
         }
 
-        if (is_object($data)&&method_exists($data,'run')){
+        if (is_object($data) && method_exists($data, 'run')) {
             $data->run($serv, $task_id, $fromWorkerId);
             unset($data);
         }
-        \think\Hook::listen('swoole_on_task',$data);
-        if($data instanceof SuperClosure){
-            return $data($serv,  $task_id,  $data);
-        }else{
+        \think\Hook::listen('swoole_on_task', $data);
+        if ($data instanceof SuperClosure) {
+            return $data($serv, $task_id, $data);
+        } else {
             $serv->finish($data);
         }
 
     }
 
-    public function onFinish(HttpServer $serv,  $task_id,  $data)
+    public function onFinish(HttpServer $serv, $task_id, $data)
     {
-        \think\Hook::listen('swoole_on_finish',$data);
-        if($data instanceof SuperClosure){
-             $data($serv,  $task_id,  $data);
+        \think\Hook::listen('swoole_on_finish', $data);
+        if ($data instanceof SuperClosure) {
+            $data($serv, $task_id, $data);
         }
     }
 

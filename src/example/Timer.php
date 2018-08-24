@@ -8,7 +8,7 @@
 //
 //namespace app\lib;
 //
-//use xavier\swoole\Component\Timer as TimerC;
+//use xavier\swoole\template\Timer as TimerC;
 //class Timer extends TimerC
 //{
 //    public function _initialize(...$arg)

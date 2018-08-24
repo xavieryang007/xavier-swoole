@@ -82,8 +82,9 @@ return [
 注意：\think\Request 增加如下静态方法。
 由于TP运行在Apache或者NGINX下，是每次请求后都会销毁，所以这里的单例并不会造成什么问题，但是在Swoole下，由于常驻内存，所以请求单例一旦实例化则不会改变，所以这里就将其删除，每次请求后重新实例化
 
+目前TP官方已经支持如下方法，已经不需要修改，但目前尚未合并到5.0分支，如需要可以下载官方master分支
 ```php
-public static function deletethis()
+public static function destroy()
     {
         if (!is_null(self::$instance)) {
             self::$instance=null;
@@ -241,7 +242,7 @@ class Index
 
 namespace app\lib;
 
-use xavier\swoole\Component\Timer as TimerC;
+use xavier\swoole\template\Timer as TimerC;
 class Timer extends TimerC
 {
     public function _initialize(...$arg)
@@ -301,4 +302,55 @@ Timer::tick(1000,'\\app\\lib\\Timer');
 系统配置的定时器，在第一个worker创建一个定时器，根据任务是否到期需要执行来进行异步任务投递，并不是对当前进程造成阻塞
 但是需要配置task_work_num
 
+----------------------2018-08-24-------------------------
+### 和think-swoole 官方统一类的命名空间
+xavier-swoole会和官方think-swoole保持同步更新
+
+接口文件统一存放在 xavier\swoole\template命名空间下
+### 自定义服务启动 
+
+该方法等同于swoole onWorkerStart
+
+使用方法
+
+```php
+<?php
+namespace app\lib;
+/**
+ * Created by PhpStorm.
+ * User: xavier
+ * Date: 2018/8/24
+ * Time: 上午9:26
+ * Email:499873958@qq.com
+ */
+use xavier\swoole\template\WorkerStart as Worker;
+class WorkerStart extends Worker
+{
+    public function _initialize($server, $worker_id)
+    {
+        // TODO: Implement _initialize() method.
+    }
+
+    public function run()
+    {
+        
+    }
+}
+```
+在swoole.php中配置
+```php
+'wokerstart'=>'\\app\\lib\\WorkStart'
+```
+
+
+//闭包方式
+```php
+'wokerstart'=>function($server, $worker_id){
+    //如果只在一个进程处理 则可以这样
+
+    if (0==$woker_id){
+        //这样只会在第一个woker进程处理
+    }
+}
+```
 手册 https://www.kancloud.cn/xavier007/xavier_swoole

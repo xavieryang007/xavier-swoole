@@ -8,7 +8,7 @@
 //
 //namespace app\lib;
 //
-//use xavier\swoole\Component\Task as TaskC;
+//use xavier\swoole\template\Task as TaskC;
 //class Task extends TaskC
 //{
 //    public function _initialize(...$arg)

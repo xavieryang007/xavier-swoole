@@ -6,7 +6,7 @@
  * Time: 上午11:42
  */
 
-namespace xavier\swoole\Component;
+namespace xavier\swoole\template;
 
 
 abstract class Task

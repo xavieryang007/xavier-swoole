@@ -6,7 +6,7 @@
  * Time: 下午12:18
  */
 
-namespace xavier\swoole\Component;
+namespace xavier\swoole\template;
 
 use xavier\swoole\Application;
 /**

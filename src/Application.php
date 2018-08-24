@@ -4,6 +4,7 @@
  * author:xavier
  * email:49987958@qq.com
  */
+
 namespace xavier\swoole;
 
 use Swoole\Http\Request;
@@ -12,13 +13,15 @@ use think\App;
 use think\Error;
 use think\exception\HttpException;
 use think\Request as thinkRequest;
+use think\Config;
 
 /**
  * Swoole应用对象
  */
 class Application extends App
 {
-    private static $swoole=null;
+    private static $swoole = null;
+
     /**
      * 处理Swoole请求
      * @access public
@@ -29,13 +32,11 @@ class Application extends App
     public function swoole(Request $request, Response $response)
     {
         try {
-            thinkRequest::deletethis();
+            thinkRequest::destroy();
             ob_start();
-
             // 重置应用的开始时间和内存占用
             $this->beginTime = microtime(true);
             $this->beginMem  = memory_get_usage();
-
 
             $_COOKIE = $request->cookie ?: [];
             $_GET    = $request->get ?: [];
@@ -44,19 +45,14 @@ class Application extends App
             $_FILES  = $request->files ?: [];
             $_SERVER = array_change_key_case($request->server ?: [], CASE_UPPER);
 
-            $_SERVER['HTTP_HOST'] = '127.0.0.1';
-            $_SERVER["PATH_INFO"] = $_SERVER["PATH_INFO"] ?: '/';
-
+            $_SERVER['HTTP_HOST'] = Config::get('app_host') ? Config::get('app_host') : "127.0.0.1";
             $_SERVER['argv'][1] = $_SERVER["PATH_INFO"];
             $resp               = $this->run();
             $resp->send();
             $content = ob_get_clean();
             $status  = $resp->getCode();
-
-
             // 发送状态码
             $response->status($status);
-
             // 发送Header
             foreach ($resp->getHeader() as $key => $val) {
                 $response->header($key, $val);
@@ -90,10 +86,12 @@ class Application extends App
 
         throw $e;
     }
+
     public function setSwoole($swoole)
     {
-        self::$swoole=$swoole;
+        self::$swoole = $swoole;
     }
+
     public static function getSwoole()
     {
         return self::$swoole;

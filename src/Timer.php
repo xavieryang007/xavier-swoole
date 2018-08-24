@@ -9,33 +9,34 @@
 namespace xavier\swoole;
 
 use Swoole\Timer as SwooleTimer;
-use xavier\swoole\Lib\Crontab;
 use XCron\CronExpression;
+use think\Config;
+use think\Cache;
+
 /**
  * Class Timer
  * 可以执行回调函数，同时可以执行定时器模板
  * @package xavier\swoole
  */
-use think\Config;
-use think\Cache;
 class Timer
 {
     private static $instance = null;
     private static $timerlists = [];
-    private $config=[];
+    private $config = [];
+
     public function __construct()
     {
-        $this->config=Config::get('timer');
-        if (empty($this->config)){
-            $this->config=[];
+        $this->config = Config::get('timer');
+        if (empty($this->config)) {
+            $this->config = [];
             //throw new \think\Exception("timer setting file is not exits");
         }
     }
 
     public static function instance()
     {
-        if (is_null(self::$instance)){
-            self::$instance=new static();
+        if (is_null(self::$instance)) {
+            self::$instance = new static();
             return self::$instance;
         }
         return self::$instance;
@@ -43,19 +44,19 @@ class Timer
 
     public function run($serv)
     {
-        if (count(self::$timerlists)>0){
+        if (count(self::$timerlists) > 0) {
             $this->startTask();
-        }else{
+        } else {
             $this->initimerlists();
         }
-
     }
+
     public function startTask()
     {
-        foreach (self::$timerlists as &$one){
-            if ($one['nexttime']<=time()){
-                $cron=CronExpression::factory($one['key']);
-                $one['nexttime']=$cron->getNextRunDate()->getTimestamp();
+        foreach (self::$timerlists as &$one) {
+            if ($one['nexttime'] <= time()) {
+                $cron            = CronExpression::factory($one['key']);
+                $one['nexttime'] = $cron->getNextRunDate()->getTimestamp();
                 $this->syncTask($one['val']);
             }
         }
@@ -64,15 +65,15 @@ class Timer
 
     public function initimerlists()
     {
-        $i=0;
-        foreach ($this->config as $key=>$val){
-            try{
-                $cron=CronExpression::factory($key);
-                $time=$cron->getNextRunDate()->getTimestamp();
-                self::$timerlists[$i]['key']=$key;
-                self::$timerlists[$i]['val']=$val;
-                self::$timerlists[$i]['nexttime']=$time;
-            }catch (\Exception $e){
+        $i = 0;
+        foreach ($this->config as $key => $val) {
+            try {
+                $cron                             = CronExpression::factory($key);
+                $time                             = $cron->getNextRunDate()->getTimestamp();
+                self::$timerlists[$i]['key']      = $key;
+                self::$timerlists[$i]['val']      = $val;
+                self::$timerlists[$i]['nexttime'] = $time;
+            } catch (\Exception $e) {
                 var_dump($e);
                 throw new \Exception("定时器异常");
             }
@@ -83,10 +84,10 @@ class Timer
 
     public function syncTask($class)
     {
-        if (is_string($class)&&class_exists($class)){
-            \go(function()use($class){
-                Task::async(function()use($class){
-                    $obj=new $class();
+        if (is_string($class) && class_exists($class)) {
+            \go(function () use ($class) {
+                Task::async(function () use ($class) {
+                    $obj = new $class();
                     $obj->run();
                     unset($obj);
                 });
