@@ -353,4 +353,7 @@ class WorkerStart extends Worker
     }
 }
 ```
+
+future :
+1 添加MYSQL跨进程的连接池，提高链接复用
 手册 https://www.kancloud.cn/xavier007/xavier_swoole
