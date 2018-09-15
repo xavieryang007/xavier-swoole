@@ -4,6 +4,7 @@
  * author:xavier
  * email:49987958@qq.com
  */
+
 namespace xavier\swoole\command;
 
 use think\console\Command;
@@ -16,6 +17,7 @@ use think\console\Output;
 use think\console\input\Argument;
 use xavier\swoole\Http as HttpServer;
 use Swoole\Process;
+
 class Swoole extends Command
 {
     protected $config = [];
@@ -86,7 +88,7 @@ class Swoole extends Command
     protected function start()
     {
         $pid = $this->getMasterPid();
-        \think\Hook::listen('swoole_before_start',$pid);
+        \think\Hook::listen('swoole_before_start', $pid);
         if ($this->isRunning($pid)) {
             $this->output->writeln('<error>swoole http server process is already running.</error>');
             return false;
@@ -105,7 +107,7 @@ class Swoole extends Command
         }
 
         $swoole = new HttpServer($host, $port, $mode, $type);
-
+        $swoole->setHttp($swoole);
         // 开启守护进程模式
         if ($this->input->hasOption('daemon')) {
             $this->config['daemonize'] = 1;
@@ -115,6 +117,7 @@ class Swoole extends Command
         // 设置应用目录
         $swoole->setAppPath($this->config['app_path']);
 
+        $swoole->cachetable();
         // 创建内存表
         if (!empty($this->config['table'])) {
             $swoole->table($this->config['table']);
@@ -158,7 +161,7 @@ class Swoole extends Command
         $this->output->writeln('Reloading swoole http server...');
         Process::kill($pid, SIGUSR1);
         $this->output->writeln('> success');
-        \think\Hook::listen('swoole_reload',$pid);
+        \think\Hook::listen('swoole_reload', $pid);
     }
 
     /**
@@ -169,7 +172,7 @@ class Swoole extends Command
     protected function stop()
     {
         $pid = $this->getMasterPid();
-        \think\Hook::listen('swoole_before_stop',$pid);
+        \think\Hook::listen('swoole_before_stop', $pid);
         if (!$this->isRunning($pid)) {
             $this->output->writeln('<error>no swoole http server process running.</error>');
             return false;
@@ -191,7 +194,7 @@ class Swoole extends Command
     protected function restart()
     {
         $pid = $this->getMasterPid();
-        \think\Hook::listen('swoole_before_restart',$pid);
+        \think\Hook::listen('swoole_before_restart', $pid);
         if ($this->isRunning($pid)) {
             $this->stop();
         }
@@ -209,7 +212,7 @@ class Swoole extends Command
         $pidFile = $this->config['pid_file'];
 
         if (is_file($pidFile)) {
-            $masterPid = (int) file_get_contents($pidFile);
+            $masterPid = (int)file_get_contents($pidFile);
         } else {
             $masterPid = 0;
         }

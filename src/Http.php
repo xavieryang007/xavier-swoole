@@ -13,6 +13,7 @@ use think\Error;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
 use think\Config;
+use think\Loader;
 
 /**
  * Swoole Http Server 命令行服务类
@@ -23,7 +24,9 @@ class Http extends Server
     protected $appPath;
     protected $table;
     protected $monitor;
+    protected $cachetable;
     protected $lastMtime;
+    protected static $http;
     protected $fieldType = [
         'int'    => Table::TYPE_INT,
         'string' => Table::TYPE_STRING,
@@ -116,6 +119,9 @@ class Http extends Server
         if ($this->table) {
             $this->app['swoole_table'] = $this->table;
         }
+        Loader::addClassMap([
+            'think\\cache\\driver\\Table' => __DIR__ . '/cache/driver/Table.php',
+        ]);
 
         $this->initServer($server, $worker_id);
 
@@ -232,6 +238,16 @@ class Http extends Server
 
     }
 
+    public function cachetable()
+    {
+        $this->cachetable = new CacheTable();
+    }
+
+    public function getCacheTable()
+    {
+        return $this->cachetable;
+    }
+
     public function onFinish(HttpServer $serv, $task_id, $data)
     {
         \think\Hook::listen('swoole_on_finish', $data);
@@ -258,5 +274,15 @@ class Http extends Server
         }
 
         throw $e;
+    }
+
+    public function setHttp($http)
+    {
+        self::$http=$http;
+    }
+
+    public static function getHttp()
+    {
+        return self::$http;
     }
 }

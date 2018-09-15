@@ -354,6 +354,15 @@ class WorkerStart extends Worker
 }
 ```
 
-future :
-1 添加MYSQL跨进程的连接池，提高链接复用
+基于SwooleTable的高速跨进程缓存，只需要更改如下配置，Cache即可变身高速缓存
+```php
+'cache'                  => [
+        // 驱动方式
+        'type'   => 'Table',
+        // 缓存前缀
+        'prefix' => '',
+        // 缓存有效期 0表示永久缓存
+        'expire' => 0,
+    ],
+```
 手册 https://www.kancloud.cn/xavier007/xavier_swoole
