@@ -22,6 +22,7 @@
       "src/command.php"
     ]
   },
+  "minimum-stability": "dev",
   "extra": {
     "think-config": {
       "swoole": "src/config/swoole.php",
