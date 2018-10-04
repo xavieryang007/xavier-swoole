@@ -424,4 +424,25 @@ WebSocket通讯数据结构
 
 客户端JS可以参考example里websocketclient.js
 
+
+服务端发送数据
+
+```php
+use xavier\swoole\WebSocketFrame;
+
+$client=WebSocketFrame::getInstance();
+//发送数据给当前请求的客户端
+$client->pushToClient([]);//参数为数组，字符串，数字
+//发送给所有客户端
+$client->pushToClients([]);//参数为数组，字符串，数字
+
+$client->getArgs();//获取arguments里的参数
+
+$client->getData();//获取客户端发送给的所有数据
+
+$client->getServer();//获取当前server
+
+$client->getFrame();//获取当前客户端给发送的原始数据
+```
+
 手册 https://www.kancloud.cn/xavier007/xavier_swoole
