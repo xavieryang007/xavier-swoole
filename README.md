@@ -365,4 +365,63 @@ class WorkerStart extends Worker
         'expire' => 0,
     ],
 ``` 
+
+
+------------------2018-10-04--------------------------------
+1.支持websocket服务
+2.编写websocket测试JS库
+
+启动命令
+```php
+php think swoole:server
+```
+
+配置文件，WebsSocket的配置文件为server.php,路径和swoole.php路径相同
+
+```php
+<?php
+return [
+    'host'                  => '0.0.0.0', // 监听地址
+    'port'                  => 9502, // 监听端口
+    'mode'                  => '', // 运行模式 默认为SWOOLE_PROCESS
+    'sock_type'             => '', // sock type 默认为SWOOLE_SOCK_TCP
+    'app_path'              => getcwd() . '/application', // 应用地址 如果开启了 'daemonize'=>true 必须设置（使用绝对路径）
+    'file_monitor'          => false, // 是否开启PHP文件更改监控（调试模式下自动开启）
+    'file_monitor_interval' => 2, // 文件变化监控检测时间间隔（秒）
+    'file_monitor_path'     => [], // 文件监控目录 默认监控application和config目录
+    // 可以支持swoole的所有配置参数
+    'pid_file'              => getcwd()  . '/runtime/swoole.pid',
+    'log_file'              => getcwd()  . '/runtime/swoole.log',
+    'task_worker_num'       => 20,
+    // 'document_root'         => getcwd() . '/public',
+    // 'enable_static_handler' => true,
+    'daemonize'                => false,//守护
+    'worker_num' => 8,    //worker process num
+    'max_request' => 10000,
+];
+```
+
+
+WebSocket通讯数据结构
+```json
+{
+    "event":"",//事件名称
+    "url":"",//目标地址
+    "arguments":{//客户端投递数据
+        "post":[],//post数据
+        "get":[],//get数据
+        "cookie":[],//cookie数据
+   }
+}
+```
+详解 
+
+* event  该参数为事件名称，用于触发客户端事件，即接收服务器推送数据处理指定任务
+
+* url，该为访问的目标地址，相当于http模式下http://xxx.com/url
+
+* arguments 客户端投递的所有数据，如果希望可以按照原来POST,GET的方式处理数据，可以提交时按照上述方式提交，会自动处理
+
+客户端JS可以参考example里websocketclient.js
+
 手册 https://www.kancloud.cn/xavier007/xavier_swoole
