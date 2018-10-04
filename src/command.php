@@ -8,10 +8,9 @@ if (!defined("APP_PATH")){
     define('APP_PATH', __DIR__ . '/../application/');
 }
 
-if (!defined("IS_SWOOLE")){
-    define('IS_SWOOLE',true);
-}
+
 // 注册命令行指令
 \think\Console::addDefaultCommands([
-    '\\xavier\\swoole\\command\\Swoole',
+    'swoole'        => '\\xavier\\swoole\\command\\Swoole',
+    'swoole:server' => '\\xavier\\swoole\\command\\Server',
 ]);

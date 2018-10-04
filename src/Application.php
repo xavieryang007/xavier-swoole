@@ -29,7 +29,7 @@ class Application extends App
      * @param  \Swoole\Http\Response $response
      * @param  void
      */
-    public function swoole(Request $request, Response $response)
+    public function swooleHttp(Request $request, Response $response)
     {
         try {
             thinkRequest::destroy();
@@ -41,7 +41,6 @@ class Application extends App
             $_COOKIE = $request->cookie ?: [];
             $_GET    = $request->get ?: [];
             $_POST   = $request->post ?: [];
-            $_COOKIE = $request->cookie ?: [];
             $_FILES  = $request->files ?: [];
             $_SERVER = array_change_key_case($request->server ?: [], CASE_UPPER);
 
@@ -67,6 +66,38 @@ class Application extends App
         }
     }
 
+    public function swooleWebSocket($server,$frame)
+    {
+        try {
+            thinkRequest::destroy();
+            WebSocketFrame::destroy();
+            $request=$frame->data;
+            $request=json_decode($request,true);
+            // 重置应用的开始时间和内存占用
+            $this->beginTime = microtime(true);
+            $this->beginMem  = memory_get_usage();
+            WebSocketFrame::getInstance($server,$frame);
+            $_COOKIE = isset($request['arguments']['cookie'])?$request['arguments']['cookie']:[];
+            $_GET    =  isset($request['arguments']['get'])?$request['arguments']['get']:[];
+            $_POST   = isset($request['arguments']['post'])?$request['arguments']['post']:[];
+            $_FILES  =  isset($request['arguments']['files'])?$request['arguments']['files']:[];
+            $_SERVER["PATH_INFO"] = $request['url'] ?: '/';
+            $_SERVER["REQUEST_URI"] = $request['url'] ?: '/';
+            $_SERVER["SERVER_PROTOCOL"] = 'http';
+            $_SERVER["REQUEST_METHOD"]  = 'post';
+
+            $_SERVER['HTTP_HOST'] = Config::get('app_host') ? Config::get('app_host') : "127.0.0.1";
+            $_SERVER['argv'][1] = $_SERVER["PATH_INFO"];
+            $resp               = $this->run();            
+        } catch (HttpException $e) {
+            $this->webSocketException($server, $frame,$e);
+        } catch (\Exception $e) {
+            $this->webSocketException($server,$frame ,$e);
+        } catch (\Throwable $e) {
+            $this->webSocketException($server, $frame,$e);
+        }
+    }
+
     protected function exception($response, $e)
     {
         if ($e instanceof \Exception) {
@@ -83,6 +114,17 @@ class Application extends App
             $response->status(500);
             $response->end($e->getMessage());
         }
+
+        throw $e;
+    }
+
+    protected function webSocketException($server, $frame,$e)
+    {
+        $response=[
+            'code'=>500,
+            'content'=>$e->getMessage()
+        ];
+        $server->push($frame->fd,json_encode($response));
 
         throw $e;
     }
