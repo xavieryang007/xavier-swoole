@@ -39,6 +39,10 @@ class Process extends Queue
             
             while(true){
                 $this->job($key,$val);
+                self::$times++;
+                if (self::$times>$this->maxtimes){//一定次数后挂掉进程，master进程会重新启动进程，这样可以防止长时间运行造成的内存泄露
+                    $process->exit();
+                }
             }
         }, false, false);
         return $process;
@@ -46,10 +50,6 @@ class Process extends Queue
 
     public function job($key,$val)
     {
-        self::$times++;
-        if (self::$times>$this->maxtimes){//一定次数后挂掉进程，master进程会重新启动进程，这样可以防止长时间运行造成的内存泄露
-            exit();
-        }
         $worker=new Worker();
         $worker->pop($key,$val['delay'],$val['sleep'],$val['maxTries']);
         unset($worker);
