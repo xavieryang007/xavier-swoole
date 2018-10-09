@@ -454,7 +454,7 @@ $client->getFrame();//获取当前客户端给发送的原始数据
 
 新增队列支持
 
-think-queue，是一个非常好用的队列服务，xavier-swoole的队列服务依赖于think-queue，
+think-queue，是一个非常好用的队列服务，xavier-swoole的队列服务依赖于think-queue，使用方法和think-queue保持一致
 
 主要增加如下功能
 
