@@ -368,8 +368,11 @@ class WorkerStart extends Worker
 
 
 ------------------2018-10-04--------------------------------
+
 1.支持websocket服务
 2.编写websocket测试JS库
+
+注：websocket模式，为测试开发阶段，如采用websocket命令启动服务，xavier-swoole的较多特性无法启用，稍后更新中会将http服务和websocket服务整合
 
 启动命令
 ```php
@@ -443,6 +446,36 @@ $client->getData();//获取客户端发送给的所有数据
 $client->getServer();//获取当前server
 
 $client->getFrame();//获取当前客户端给发送的原始数据
+```
+
+
+
+---------------------------------2018-10-09------------------------------------------
+
+新增队列支持
+
+think-queue，是一个非常好用的队列服务，xavier-swoole的队列服务依赖于think-queue，
+
+主要增加如下功能
+
+1. 采用多进程模式运行或采用Task异步执行
+2. 可以指定同时消耗队列任务的进程数量
+3. Task模式和Server共享Task进程，充分利用资源
+4. Process模式采用进程模式，各个任务之间相互隔离，执行一定次数后，重启进程，防止内存泄露
+
+
+如果任务较多且复杂，推荐采用Process模式
+
+```php 
+'queue_type'=>'task',//task or process
+    'queue'=>[
+        "Index"=>[
+                      "delay"=>0,//延迟时间
+                      "sleep"=>3,//休息时间
+                      "maxTries"=>0,//重试次数
+                      "nums"=>2//进程数量
+        ],
+    ]
 ```
 
 手册 https://www.kancloud.cn/xavier007/xavier_swoole

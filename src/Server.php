@@ -9,7 +9,7 @@ namespace xavier\swoole;
 use Swoole\Http\Server as HttpServer;
 use Swoole\Server as SwooleServer;
 use Swoole\Websocket\Server as Websocket;
-
+use xavier\swoole\queue\Process as QueueProcess;
 /**
  * Swoole Server扩展类
  */
@@ -25,7 +25,7 @@ abstract class Server
      * SwooleServer类型
      * @var string
      */
-    protected $serverType = 'http';
+    protected $serverType = 'socket';
 
     /**
      * Socket的类型
@@ -67,8 +67,12 @@ abstract class Server
      * 架构函数
      * @access public
      */
-    public function __construct()
+    public function __construct($host= '0.0.0.0', $port= 9501, $mode = SWOOLE_PROCESS, $sockType = SWOOLE_SOCK_TCP)
     {
+        $this->port=$port;
+        $this->host=$host;
+        $this->mode=$mode;
+        $this->sockType=$sockType;
         // 实例化 Swoole 服务
         switch ($this->serverType) {
             case 'socket':
@@ -96,8 +100,13 @@ abstract class Server
         // 初始化
         $this->init();
 
+        if ("process"==\think\Config::get('swoole.queue_type')){
+            $process=new Process();
+            $process->run($this->swoole);
+        }
+
         // 启动服务
-        $this->swoole->start();
+        //$this->swoole->start();
     }
 
     protected function init()

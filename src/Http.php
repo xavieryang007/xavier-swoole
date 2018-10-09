@@ -14,7 +14,8 @@ use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
 use think\Config;
 use think\Loader;
-
+use xavier\swoole\queue\Task as QueueTask;
+use xavier\swoole\queue\Process as QueueProcess;
 /**
  * Swoole Http Server 命令行服务类
  */
@@ -46,6 +47,10 @@ class Http extends Server
     public function __construct($host, $port, $mode = SWOOLE_PROCESS, $sockType = SWOOLE_SOCK_TCP)
     {
         $this->swoole = new HttpServer($host, $port, $mode, $sockType);
+        if ("process"==Config::get('swoole.queue_type')){
+            $process=new QueueProcess();
+            $process->run($this->swoole);
+        }
     }
 
     public function getSwoole()
@@ -92,7 +97,6 @@ class Http extends Server
         if (!empty($option)) {
             $this->swoole->set($option);
         }
-
         foreach ($this->event as $event) {
             // 自定义回调
             if (!empty($option[$event])) {
@@ -194,13 +198,21 @@ class Http extends Server
     {
         $timer    = Config::get('swoole.timer');
         $interval = intval(Config::get('swoole.interval'));
+        $queue_type    = Config::get('swoole.queue_type');
         if ($timer) {
             $interval = $interval > 0 ? $interval : 1000;
             $systimer = Timer::instance();
+            
             $server->tick($interval, function () use ($systimer, $server) {
                 $systimer->run($server);
             });
         }
+        $task     = QueueTask::instance();
+        $server->tick(1000, function () use ($queue_type,$task) {
+            if ("task"==$queue_type){
+                $task->run();
+            }
+        });
     }
 
     /**
@@ -211,7 +223,7 @@ class Http extends Server
     public function onRequest(SwooleRequest $request, SwooleResponse $response)
     {
         \think\Hook::listen('swoole_on_request', $request);
-        $this->app->swoole($request, $response);
+        $this->app->swooleHttp($request, $response);
 
     }
 
