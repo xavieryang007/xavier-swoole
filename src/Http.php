@@ -28,6 +28,7 @@ class Http extends Server
     protected $cachetable;
     protected $lastMtime;
     protected static $http;
+	protected $server_type;
     protected $fieldType = [
         'int'    => Table::TYPE_INT,
         'string' => Table::TYPE_STRING,
@@ -46,7 +47,14 @@ class Http extends Server
      */
     public function __construct($host, $port, $mode = SWOOLE_PROCESS, $sockType = SWOOLE_SOCK_TCP)
     {
-        $this->swoole = new HttpServer($host, $port, $mode, $sockType);
+        $this->server_type = Config::get('swoole.server_type');
+        switch ($this->server_type) {
+            case 'websocket':
+                $this->swoole = new WebSocketServer($host, $port, $mode, SWOOLE_SOCK_TCP);
+                break;
+            default:
+                $this->swoole = new HttpServer($host, $port, $mode, SWOOLE_SOCK_TCP);
+        }
         if ("process"==Config::get('swoole.queue_type')){
             $process=new QueueProcess();
             $process->run($this->swoole);
@@ -155,6 +163,13 @@ class Http extends Server
                 $wokerStart($server, $worker_id);
             }
         }
+		if ("websocket" == $this->server_type) {
+            foreach ($this->event as $event) {
+                if (method_exists($this, 'Websocketon' . $event)) {
+                    $this->swoole->on($event, [$this, 'Websocketon' . $event]);
+                }
+            }
+        }
     }
 
     public function getTable()
@@ -225,6 +240,17 @@ class Http extends Server
         \think\Hook::listen('swoole_on_request', $request);
         $this->app->swooleHttp($request, $response);
 
+    }
+	
+	/**
+     * Message回调
+     * @param $server
+     * @param $frame
+     */
+    public function WebsocketonMessage($server, $frame)
+    {
+        // 执行应用并响应
+        $this->app->swooleWebSocket($server, $frame);
     }
 
     public function onTask(HttpServer $serv, $task_id, $fromWorkerId, $data)
