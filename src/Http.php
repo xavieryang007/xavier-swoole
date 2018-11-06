@@ -253,6 +253,16 @@ class Http extends Server
         $this->app->swooleWebSocket($server, $frame);
     }
 
+    /**
+     * Close
+     * @param $server
+     * @param $frame
+     */
+    public function WebsocketonClose($server, $fd,$reactorId)
+    {
+        \think\Hook::listen('swoole_websocket_on_close',[$server, $fd,$reactorId]);
+    }
+
     public function onTask(HttpServer $serv, $task_id, $fromWorkerId, $data)
     {
         if (is_string($data) && class_exists($data)) {
