@@ -114,6 +114,13 @@ class Http extends Server
                 $this->swoole->on($event, [$this, 'on' . $event]);
             }
         }
+		if ("websocket" == $this->server_type) {
+            foreach ($this->event as $event) {
+                if (method_exists($this, 'Websocketon' . $event)) {
+                    $this->swoole->on($event, [$this, 'Websocketon' . $event]);
+                }
+            }
+        }
     }
 
     /**
@@ -162,13 +169,6 @@ class Http extends Server
                 unset($obj);
             } elseif ($wokerStart instanceof \Closure) {
                 $wokerStart($server, $worker_id);
-            }
-        }
-		if ("websocket" == $this->server_type) {
-            foreach ($this->event as $event) {
-                if (method_exists($this, 'Websocketon' . $event)) {
-                    $this->swoole->on($event, [$this, 'Websocketon' . $event]);
-                }
             }
         }
     }
