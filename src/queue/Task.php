@@ -46,6 +46,7 @@ class Task extends Queue
 
     public function initTimerLists()
     {
+		if (!empty($this->config))
         foreach($this->config as $key=>$val){
             $this->config[$key]["nexttime"]=time();
         }
