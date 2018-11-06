@@ -8,6 +8,7 @@
 namespace xavier\swoole;
 
 use Swoole\Http\Server as HttpServer;
+use Swoole\WebSocket\Server as WebSocketServer;
 use Swoole\Table;
 use think\Error;
 use Swoole\Http\Request as SwooleRequest;
