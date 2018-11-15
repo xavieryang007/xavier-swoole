@@ -256,8 +256,6 @@ class Http extends Server
 
     /**
      * Close
-     * @param $server
-     * @param $frame
      */
     public function WebsocketonClose($server, $fd,$reactorId)
     {

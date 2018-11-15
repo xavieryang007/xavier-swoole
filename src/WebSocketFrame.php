@@ -18,7 +18,9 @@ class WebSocketFrame implements \ArrayAccess
     {
         $this->server=$server;
         $this->frame=$frame;
-        $this->data=json_decode($this->frame->data,true);
+		$this->data=null;
+		if (isset($this->frame->data))
+			$this->data=json_decode($this->frame->data,true);
     }
 
     public static function getInstance($server=null,$frame=null)
