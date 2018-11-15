@@ -3,7 +3,7 @@
 参考官方think-swoole2.0和easyswoole开发基于TP5.0的swoole扩展包
 
 增加异步任务投递
-QQ499873958
+QQ群194870448
 
 
 ```php
