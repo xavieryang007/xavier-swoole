@@ -78,7 +78,7 @@ class Application extends App
             if ($debugclient){
                 $debug_client_key=Config::get('swoole.debug_client_key');
                 $fd=Cache::get($debug_client_key);
-                if ($fd){
+                if ($fd&&$server->exist($fd)){
                     $server->push($fd,$frame->data);
                 }
             }
