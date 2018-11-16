@@ -263,8 +263,8 @@ class Http extends Server
         $debugclient=Config::get('swoole.debug_client');
         if ($debugclient){
             $debug_client_key=Config::get('swoole.debug_client_key');
-            $fd=Cache::get($debug_client_key);
-            if ($fd){
+            $_fd=Cache::get($debug_client_key);
+            if ($_fd==$fd){
                 Cache::set($debug_client_key,null);
             }
         }
