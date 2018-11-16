@@ -14,6 +14,7 @@ use think\Error;
 use think\exception\HttpException;
 use think\Request as thinkRequest;
 use think\Config;
+use think\Cache;
 
 /**
  * Swoole应用对象
@@ -73,6 +74,14 @@ class Application extends App
             WebSocketFrame::destroy();
             $request=$frame->data;
             $request=json_decode($request,true);
+            $debugclient=Config::get('swoole.debug_client');
+            if ($debugclient){
+                $debug_client_key=Config::get('swoole.debug_client_key');
+                $fd=Cache::get($debug_client_key);
+                if ($fd){
+                    $server->push($fd,$frame->data);
+                }
+            }
             // 重置应用的开始时间和内存占用
             $this->beginTime = microtime(true);
             $this->beginMem  = memory_get_usage();
