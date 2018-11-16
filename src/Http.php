@@ -259,7 +259,15 @@ class Http extends Server
      */
     public function WebsocketonClose($server, $fd,$reactorId)
     {
-		$data=[$server, $fd,$reactorId];
+        $data=[$server, $fd,$reactorId];
+        $debugclient=Config::get('swoole.debug_client');
+        if ($debugclient){
+            $debug_client_key=Config::get('swoole.debug_client_key');
+            $fd=Cache::get($debug_client_key);
+            if ($fd){
+                Cache::set($debug_client_key,null);
+            }
+        }
         \think\Hook::listen('swoole_websocket_on_close',$data);
     }
 
