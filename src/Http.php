@@ -14,6 +14,7 @@ use think\Error;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
 use think\Config;
+use think\Cache;
 use think\Loader;
 use xavier\swoole\queue\Task as QueueTask;
 use xavier\swoole\queue\Process as QueueProcess;
